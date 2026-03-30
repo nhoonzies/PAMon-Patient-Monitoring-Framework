@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAMON | Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-card { transition: all 0.3s ease; }
+        .alert-active { background-color: #ef4444; color: white; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white font-sans">
+    <nav class="bg-slate-800 p-4 border-b border-slate-700 shadow-xl">
+        <h1 class="text-2xl font-bold tracking-tight">PAMON <span class="text-blue-400">Admin</span></h1>
+    </nav>
+
+    <main class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700">
+            <div class="p-4 bg-slate-700 flex justify-between items-center">
+                <span class="font-semibold">Live Patient Monitor</span>
+                <span id="camera-status" class="px-2 py-1 rounded text-xs bg-green-500">CAMERA LIVE</span>
+            </div>
+            <img src="/video_feed" class="w-full h-auto bg-black" alt="Live Stream">
+        </div>
+
+        <div class="space-y-6">
+            <div id="status-card" class="status-card bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+                <h2 class="text-slate-400 uppercase text-xs font-bold mb-2">Current Activity</h2>
+                <p id="patient-status" class="text-3xl font-bold italic">ANALYZING...</p>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+                <h2 class="text-slate-400 uppercase text-xs font-bold mb-4">System Health</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span>AI Engine</span>
+                        <span class="text-green-400 font-mono">STABLE</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>API Latency</span>
+                        <span id="latency" class="text-blue-400 font-mono">--ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold transition">
+                Refresh Dashboard
+            </button>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
