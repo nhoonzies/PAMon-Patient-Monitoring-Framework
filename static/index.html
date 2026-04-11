@@ -2,55 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PAMON | Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .status-card { transition: all 0.3s ease; }
-        .alert-active { background-color: #ef4444; color: white; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .alert-pulse { animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { border-color: #ef4444; } 50% { border-color: #7f1d1d; } 100% { border-color: #ef4444; } }
+        /* Custom scrollbars for a sleek look */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-900 text-white font-sans">
-    <nav class="bg-slate-800 p-4 border-b border-slate-700 shadow-xl">
-        <h1 class="text-2xl font-bold tracking-tight">PAMON <span class="text-blue-400">Admin</span></h1>
+<body class="bg-slate-950 text-slate-100 h-screen overflow-hidden flex flex-col">
+    <nav class="bg-slate-900/50 backdrop-blur-md border-b border-slate-800 p-3 flex justify-between items-center shrink-0">
+        <h1 class="text-xl font-bold tracking-tighter text-teal-500">PAMON <span class="text-white font-light">DASHBOARD</span></h1>
+        <div id="connection-status" class="flex items-center gap-2 text-xs font-mono text-green-500">
+            <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
+            SYSTEM ONLINE | <span id="latency-text">0ms</span>
+        </div>
     </nav>
 
-    <main class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700">
-            <div class="p-4 bg-slate-700 flex justify-between items-center">
-                <span class="font-semibold">Live Patient Monitor</span>
-                <span id="camera-status" class="px-2 py-1 rounded text-xs bg-green-500">CAMERA LIVE</span>
+    <div class="p-4 grid grid-cols-12 gap-4 flex-1 min-h-0">
+
+        <div class="col-span-12 lg:col-span-8 flex flex-col gap-4 min-h-0">
+
+            <div id="video-container" class="relative bg-black rounded-2xl overflow-hidden border-4 border-slate-900 shadow-2xl flex justify-center items-center h-[55%] shrink-0">
+                <img id="live-stream" src="/video_feed" class="h-full w-auto object-contain" crossorigin="anonymous">
+                <div id="alert-border" class="hidden absolute inset-0 border-[12px] border-red-600/50 pointer-events-none alert-pulse"></div>
             </div>
-            <img src="/video_feed" class="w-full h-auto bg-black" alt="Live Stream">
+
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl flex-1 flex flex-col min-h-0">
+                <h3 class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-2 shrink-0">Estimated Movement Intensity</h3>
+                <div class="flex-1 relative min-h-0">
+                     <canvas id="motionChart" class="absolute inset-0 w-full h-full"></canvas>
+                </div>
+            </div>
         </div>
 
-        <div class="space-y-6">
-            <div id="status-card" class="status-card bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
-                <h2 class="text-slate-400 uppercase text-xs font-bold mb-2">Current Activity</h2>
-                <p id="patient-status" class="text-3xl font-bold italic">ANALYZING...</p>
+        <div class="col-span-12 lg:col-span-4 flex flex-col gap-4 min-h-0">
+
+            <div id="status-card" class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl text-center transition-colors duration-300 shrink-0">
+                <h3 class="text-slate-400 text-[10px] font-bold uppercase mb-1 tracking-widest">Current Patient State</h3>
+                <p id="status-text" class="text-3xl font-black italic text-slate-300">CONNECTING...</p>
+                <button id="ack-btn" onclick="acknowledgeAlert()" class="hidden mt-3 w-full py-2 bg-red-600 hover:bg-red-500 text-xs font-bold rounded-lg transition-all shadow-lg shadow-red-900/50 uppercase tracking-wide">
+                    Acknowledge Alert
+                </button>
             </div>
 
-            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
-                <h2 class="text-slate-400 uppercase text-xs font-bold mb-4">System Health</h2>
-                <div class="space-y-4">
-                    <div class="flex justify-between">
-                        <span>AI Engine</span>
-                        <span class="text-green-400 font-mono">STABLE</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>API Latency</span>
-                        <span id="latency" class="text-blue-400 font-mono">--ms</span>
-                    </div>
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl flex flex-col flex-1 min-h-0">
+                <div class="p-3 bg-slate-800/50 border-b border-slate-800 font-bold text-xs uppercase tracking-widest text-slate-300 flex justify-between shrink-0">
+                    <span>Emergency Alerts</span>
+                    <span id="log-count" class="text-red-400 bg-red-900/30 px-2 py-0.5 rounded-full">0 Events</span>
+                </div>
+                <div id="log-container" class="flex-1 overflow-y-auto p-3 space-y-3 relative custom-scroll">
+                    <p id="empty-log-msg" class="text-center text-slate-500 text-sm italic mt-10">No emergencies detected.</p>
                 </div>
             </div>
 
-            <button onclick="location.reload()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold transition">
-                Refresh Dashboard
-            </button>
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl flex flex-col h-[25%] shrink-0">
+                <div class="p-2 bg-slate-800/50 border-b border-slate-800 font-bold text-[10px] uppercase tracking-widest text-slate-400 shrink-0">
+                    System Text Log
+                </div>
+                <div id="raw-text-log" class="flex-1 overflow-y-auto p-3 space-y-1 font-mono text-xs custom-scroll">
+                    </div>
+            </div>
         </div>
-    </main>
+    </div>
 
-    <script src="script.js"></script>
+    <canvas id="snapshot-canvas" class="hidden" width="640" height="480"></canvas>
 </body>
+<script src="/static/script.js"></script>
 </html>
