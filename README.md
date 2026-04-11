@@ -8,7 +8,7 @@
 The framework follows a **Two-Stage Skeleton-Based Action Recognition (SBAR)** pipeline:
 
 1.  **Stage 1 (Feature Extraction):** A YOLOv8-pose model identifies 17 anatomical keypoints in real-time.
-2.  **Stage 2 (Classification):** A heuristic engine (and future Random Forest ML model) analyzes joint angles, bounding box aspect ratios, and movement velocity to classify patient states.
+2.  **Stage 2 (Classification):** A heuristic engine and future Random Forest ML model analyzes joint angles, bounding box aspect ratios, and movement velocity to classify patient states.
 
 [Image of a skeleton-based action recognition pipeline diagram]
 
@@ -36,6 +36,7 @@ The system currently implements a **Heuristic Baseline** with temporal validatio
 * **Fall/Slump Detection:** Triggers if the head (nose) drops below a specific threshold relative to the hips or if the bounding box becomes horizontal.
 * **Standing Detection:** Uses joint angle calculations (Knee/Hip/Shoulder) with a 1.5s validation timer to reduce false positives.
 * **Grace Periods:** Implements a 1.0s "Hold" state to handle momentary camera occlusions or network lag.
+* * **Thrashing/Reaching Detection: ** With the new ML trained and added, the framework can now detect thrashing and reaching emergencies.
 
 ---
 
