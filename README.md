@@ -10,7 +10,7 @@ The framework follows a **Two-Stage Skeleton-Based Action Recognition (SBAR)** p
 1.  **Stage 1 (Feature Extraction):** A YOLOv8-pose model identifies 17 anatomical keypoints in real-time.
 2.  **Stage 2 (Classification):** A heuristic engine and future Random Forest ML model analyzes joint angles, bounding box aspect ratios, and movement velocity to classify patient states.
 
-[Image of a skeleton-based action recognition pipeline diagram]
+
 
 ---
 
