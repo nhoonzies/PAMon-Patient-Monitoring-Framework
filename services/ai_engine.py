@@ -12,6 +12,7 @@ from core.state import app_state
 
 # --- SILENCE SCIKIT-LEARN WARNINGS ---
 warnings.filterwarnings("ignore", message="X does not have valid feature names")
+warnings.filterwarnings("ignore", category=UserWarning, module="sklearn.utils.parallel")
 
 # ⚠️ FORCED CPU MODE FOR AMD RYZEN
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -33,7 +34,6 @@ class HeuristicEngine:
         self.WINDOW_SIZE = 15
         self.pose_window = deque(maxlen=self.WINDOW_SIZE)
 
-        # CALIBRATED: Reduced buffer for snappier transitions (stops the shuffling lag)
         self.prediction_buffer = deque(maxlen=12)
 
         self.last_xy = np.zeros((17, 2))
@@ -134,8 +134,8 @@ class HeuristicEngine:
                     v_l_wrist = get_v(9)
                     v_r_wrist = get_v(10)
 
-                    # CALIBRATED: Raised to 0.15 so normal reaching doesn't trigger thrashing
-                    if max(v_l_wrist, v_r_wrist) > 0.15:
+                    # MIDDLE GROUND: Lowered from 0.40 to 0.30
+                    if max(v_l_wrist, v_r_wrist) > 0.30:
                         raw_ml_prediction = "Emergency_Thrashing"
                     else:
                         sh_x = (kpts[5][0] + kpts[6][0]) / 2 if kpts[5][0] and kpts[6][0] else 0
@@ -147,10 +147,15 @@ class HeuristicEngine:
                         if sh_x != 0 and hip_x != 0:
                             torso_length = np.linalg.norm([sh_x - hip_x, sh_y - hip_y])
 
-                        torso_length = torso_length if torso_length > (body_size * 0.3) else (body_size * 0.3)
+                        # Adjusted baseline ratio slightly for better accuracy
+                        torso_length = torso_length if torso_length > (body_size * 0.35) else (body_size * 0.35)
 
-                        # CALIBRATED: Lowered to 0.85 to fix reaching blindspots
-                        reach_threshold = torso_length * 0.85
+                        # MIDDLE GROUND: Standard reach is 1.05x torso length
+                        reach_threshold = torso_length * 1.05
+
+                        # MIDDLE GROUND: Laying down reach is 1.25x torso length
+                        if is_laying_down_override:
+                            reach_threshold = torso_length * 1.25
 
                         dist_l_arm = self.safe_dist(kpts[9], kpts[5]) if conf[9] > 0.5 else 0
                         dist_r_arm = self.safe_dist(kpts[10], kpts[6]) if conf[10] > 0.5 else 0
@@ -163,8 +168,7 @@ class HeuristicEngine:
                     v_l_hip = get_v(11)
                     v_r_hip = get_v(12)
 
-                    # CALIBRATED: Raised to 0.15 to stop the Sitting shuffle
-                    if not is_laying_down_override and max(v_l_hip, v_r_hip) > 0.15:
+                    if not is_laying_down_override and max(v_l_hip, v_r_hip) > 0.20:
                         raw_ml_prediction = "Normal_Baseline"
                     else:
                         valid_limb_vs = []
@@ -172,8 +176,9 @@ class HeuristicEngine:
                             if kpts[idx][0] != 0 and prev_kpts[idx][0] != 0 and conf[idx] > 0.5:
                                 valid_limb_vs.append(np.linalg.norm(v_xy[idx]) / scale)
 
-                        # CALIBRATED: Raised to 0.07 to swallow YOLO jitter and fix the Statue bug
-                        if len(valid_limb_vs) > 0 and max(valid_limb_vs) < 0.07:
+                        # MIDDLE GROUND: Dropped the Tornado Gate from 0.40 down to 0.30.
+                        # This easily catches actual thrashing, but filters out standard rolling/shifting.
+                        if len(valid_limb_vs) == 0 or max(valid_limb_vs) < 0.30:
                             raw_ml_prediction = "Normal_Baseline"
 
                 # ==========================================
