@@ -1,4 +1,5 @@
-# PAMon: Patient Monitoring Framework 🚀
+# PAMon: A Real-Time Computer Vision Framework For In-Patient Activity Classification Using YOLOv8-Pose 
+
 
 **PAMon** is a high-performance, modular AI framework designed for real-time patient safety and emergency detection. It combines **YOLOv8 Pose Estimation** with a custom temporal heuristic engine to bridge the gap between computer vision and actionable medical alerts.
 
