@@ -41,6 +41,11 @@ The system currently implements a **Heuristic Baseline** with temporal validatio
 
 ---
 
+## 🛠 Snapshots and Demos
+<img width="1873" height="911" alt="Screenshot 2026-04-21 231719" src="https://github.com/user-attachments/assets/4f3bc06b-c2f1-4e42-b154-72638fa1c933" />
+
+
+
 ## 💻 Getting Started
 
 ### 1. Installation
@@ -50,3 +55,4 @@ git clone [https://github.com/nhoonzies/PAMon-Patient-Monitoring-Framework.git](
 
 # Install dependencies
 pip install fastapi uvicorn ultralytics opencv-python torch
+
